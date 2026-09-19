@@ -9,7 +9,6 @@ st.set_page_config(
     layout="centered"
 )
 
-# Custom Black & Green Theme with Glowing Effects and Bold Fonts
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
@@ -25,7 +24,6 @@ st.markdown("""
         background: radial-gradient(circle at 50% 10%, rgba(0, 255, 102, 0.08) 0%, rgba(5, 5, 5, 1) 70%);
     }
     
-    /* Green Glowing Buttons */
     .stButton>button {
         width: 100%;
         border-radius: 12px;
@@ -44,7 +42,6 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    /* Headers & Text */
     h1, h2, h3 {
         font-weight: 900 !important;
         color: #ffffff;
@@ -55,7 +52,6 @@ st.markdown("""
         font-weight: 600 !important;
     }
     
-    /* Input & Select styling */
     .stTextInput>div>div>input, .stSelectbox>div>div>select {
         border-radius: 10px;
         border: 2px solid #222222;
@@ -68,7 +64,6 @@ st.markdown("""
         box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
     }
 
-    /* Mobile & Tablet Responsive Adjustments */
     @media (max-width: 768px) {
         .main {
             padding: 0.8rem;
@@ -85,8 +80,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("📥 أداة تحميل الفيديوهات والريلز الذكية")
-st.markdown("<p style='color: #00E676; font-weight: 700;'>يوتيوب • تيك توك • انستاجرام (أداء عالي وسرعة فائقة)</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #00E676; font-weight: 700;'>يوتيوب • تيك توك • انستاجرام (مع معلومات تفصيلية وسجل تحميلات)</p>", unsafe_allow_html=True)
 
+# Initialize session state
 if 'playlist_entries' not in st.session_state:
     st.session_state.playlist_entries = None
 if 'playlist_title' not in st.session_state:
@@ -95,12 +91,17 @@ if 'url_input' not in st.session_state:
     st.session_state.url_input = ""
 if 'selection_mode' not in st.session_state:
     st.session_state.selection_mode = "all"
+if 'video_details' not in st.session_state:
+    st.session_state.video_details = None
+if 'download_history' not in st.session_state:
+    st.session_state.download_history = []
 
 def reset_app():
     st.session_state.playlist_entries = None
     st.session_state.playlist_title = ""
     st.session_state.url_input = ""
     st.session_state.selection_mode = "all"
+    st.session_state.video_details = None
     st.rerun()
 
 col_title, col_reset = st.columns([4, 1])
@@ -113,7 +114,6 @@ platform = st.selectbox(
     ["YouTube", "TikTok Reels", "Instagram Reels"]
 )
 
-# URL Input with Paste button
 col_url, col_paste = st.columns([4, 1])
 with col_url:
     url = st.text_input("ألصق الرابط هنا:", value=st.session_state.url_input, placeholder="https://...", key="url_input")
@@ -156,7 +156,7 @@ if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
     else:
         with st.spinner("⏳ جاري فحص الرابط واستخراج تفاصيل الفيديوهات..."):
             try:
-                ydl_opts = {'extract_flat': True, 'quiet': True}
+                ydl_opts = {'quiet': True}
                 with YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(url, download=False)
                     
@@ -164,12 +164,39 @@ if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
                         st.session_state.playlist_entries = list(info['entries'])
                         st.session_state.playlist_title = info.get('title', 'قائمة تشغيل يوتيوب')
                         st.session_state.selection_mode = "all"
+                        st.session_state.video_details = None
                         st.success(f"✅ تم اكتشاف قائمة تشغيل: '{st.session_state.playlist_title}' (عدد الفيديوهات: {len(st.session_state.playlist_entries)})")
                     else:
                         st.session_state.playlist_entries = None
-                        st.info("ℹ️ هذا فيديو فردي وليس قائمة تشغيل. يمكنك الضغط على زر التحميل أدناه مباشرة.")
+                        st.session_state.video_details = {
+                            'title': info.get('title', 'غير معروف'),
+                            'uploader': info.get('uploader') or info.get('channel', 'غير معروف'),
+                            'duration': int(info.get('duration', 0)),
+                            'views': info.get('view_count', 0),
+                            'thumbnail': info.get('thumbnail')
+                        }
+                        st.success("✅ تم فحص الفيديو بنجاح!")
             except Exception as e:
                 st.error(f"❌ حدث خطأ أثناء الفحص: {str(e)}")
+
+# Display Detailed Video Info if available
+if st.session_state.video_details:
+    v = st.session_state.video_details
+    mins, secs = divmod(v['duration'], 60)
+    duration_str = f"{mins} دقيقة و {secs} ثانية" if mins > 0 else f"{secs} ثانية"
+    views_str = f"{v['views']:,}".replace(',', '.') if v['views'] else "غير متوفر"
+    
+    st.markdown(f"""
+        <div style="background-color: #121212; border: 2px solid #00E676; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 0 10px rgba(0,230,118,0.2);">
+            <h4 style="color: #00E676; margin-top:0;">📊 معلومات الفيديو:</h4>
+            <p><b>📌 العنوان:</b> {v['title']}</p>
+            <p><b>👤 القناة / الناشر:</b> {v['uploader']}</p>
+            <p><b>⏱️ المدة:</b> {duration_str}</p>
+            <p><b>👁️ عدد المشاهدات:</b> {views_str}</p>
+        </div>
+    """, unsafe_allow_html=True)
+    if v['thumbnail']:
+        st.image(v['thumbnail'], width=300)
 
 selected_videos = []
 if st.session_state.playlist_entries:
@@ -197,7 +224,8 @@ if st.session_state.playlist_entries:
         
         if search_query and search_query.lower() not in v_title.lower():
             continue
-            v_id = entry.get('id')
+            
+        v_id = entry.get('id')
         v_url = entry.get('url') or entry.get('webpage_url') or f"https://www.youtube.com/watch?v={v_id}"
         
         thumbnail_url = entry.get('thumbnail')
@@ -268,11 +296,13 @@ if st.button(download_label):
                     with YoutubeDL(ydl_opts) as ydl:
                         ydl.download(selected_videos)
                     st.success(f"✅ تم بنجاح تحميل {len(selected_videos)} فيديو من القائمة!")
+                    st.session_state.download_history.append(f"قائمة تشغيل: {st.session_state.playlist_title} ({len(selected_videos)} فيديو)")
                 else:
                     ydl_opts['noplaylist'] = True
                     with YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=True)
                         filename = ydl.prepare_filename(info)
+                        v_title = info.get('title', 'فيديو')
                         
                         if "صوت" in quality or "MP3" in quality:
                             base, _ = os.path.splitext(filename)
@@ -281,6 +311,7 @@ if st.button(download_label):
                     if os.path.exists(filename):
                         file_size_mb = os.path.getsize(filename) / (1024 * 1024)
                         st.success(f"✅ تم تجهيز الفيديو بنجاح! (الحجم: {file_size_mb:.1f} MB)")
+                        st.session_state.download_history.append(f"فردي: {v_title} [{quality}]")
                         
                         with open(filename, "rb") as f:
                             file_bytes = f.read()
@@ -297,6 +328,12 @@ if st.button(download_label):
 
             except Exception as e:
                 st.error(f"❌ حدث خطأ أثناء التحميل: {str(e)}")
+
+# Download History Section
+if st.session_state.download_history:
+    with st.expander("📜 سجل التحميلات السابقة (History)"):
+        for item in reversed(st.session_state.download_history):
+            st.markdown(f"- {item}")
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; font-size: 11px; color: gray;'>يعمل على Streamlit Community Cloud (متوافق مع جميع الأجهزة)</p>", unsafe_allow_html=True)
