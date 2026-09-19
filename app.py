@@ -80,7 +80,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("📥 أداة التحميل الذكية بالذكاء الاصطناعي")
-st.markdown("<p style='color: #00E676; font-weight: 700;'>فحص فائق السرعة • تجاوز الحظر • تحميل مباشر</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #00E676; font-weight: 700;'>تحديد ذكي • تجاوز الحظر • تحميل مباشر</p>", unsafe_allow_html=True)
 
 # Initialize session state
 if 'playlist_entries' not in st.session_state:
@@ -89,8 +89,6 @@ if 'playlist_title' not in st.session_state:
     st.session_state.playlist_title = ""
 if 'url_input' not in st.session_state:
     st.session_state.url_input = ""
-if 'selection_mode' not in st.session_state:
-    st.session_state.selection_mode = "all"
 if 'video_details' not in st.session_state:
     st.session_state.video_details = None
 if 'download_history' not in st.session_state:
@@ -102,7 +100,6 @@ def reset_app():
     st.session_state.playlist_entries = None
     st.session_state.playlist_title = ""
     st.session_state.url_input = ""
-    st.session_state.selection_mode = "all"
     st.session_state.video_details = None
     st.rerun()
 
@@ -166,7 +163,6 @@ if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
     else:
         with st.spinner("⚡ جاري فحص الرابط بسرعة فائقة..."):
             try:
-                # Anti-bot options using Android/Web player clients to bypass YouTube bot detection
                 ydl_opts = {
                     'extract_flat': True,
                     'quiet': True,
@@ -179,7 +175,6 @@ if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
                     if info and 'entries' in info:
                         st.session_state.playlist_entries = list(info['entries'])
                         st.session_state.playlist_title = info.get('title', 'قائمة تشغيل يوتيوب')
-                        st.session_state.selection_mode = "all"
                         st.session_state.video_details = None
                         st.success(f"✅ تم اكتشاف قائمة تشغيل: '{st.session_state.playlist_title}' (عدد الفيديوهات: {len(st.session_state.playlist_entries)})")
                     else:
@@ -220,19 +215,12 @@ if st.session_state.playlist_entries:
     
     search_query = st.text_input("🔎 بحث سريع عن فيديو بالاسم داخل القائمة:", placeholder="اكتب للبحث...")
     
-    c1, c2, c3, c4 = st.columns(4)
-    if c1.button("تحديد الكل"):
-        st.session_state.selection_mode = "all"
-        st.rerun()
-    if c2.button("إلغاء الكل"):
-        st.session_state.selection_mode = "none"
-        st.rerun()
-    if c3.button("أول 10"):
-        st.session_state.selection_mode = "first_10"
-        st.rerun()
-    if c4.button("أول 20"):
-        st.session_state.selection_mode = "first_20"
-        st.rerun()
+    # Reliable Selection Mode using Radio Buttons above
+    selection_mode = st.radio(
+        "طريقة التحديد السريع:",
+        ["تحديد الكل", "إلغاء الكل", "أول 10", "أول 20"],
+        horizontal=True
+    )
     
     st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
     for idx, entry in enumerate(st.session_state.playlist_entries):
@@ -249,13 +237,13 @@ if st.session_state.playlist_entries:
             thumbnail_url = f"https://i.ytimg.com/vi/{v_id}/mqdefault.jpg"
 
         default_val = True
-        if st.session_state.selection_mode == "none":
+        if selection_mode == "إلغاء الكل":
             default_val = False
-        elif st.session_state.selection_mode == "first_10":
+        elif selection_mode == "أول 10":
             default_val = (idx < 10)
-        elif st.session_state.selection_mode == "first_20":
+        elif selection_mode == "أول 20":
             default_val = (idx < 20)
-        elif st.session_state.selection_mode == "all":
+        elif selection_mode == "تحديد الكل":
             default_val = True
 
         cols = st.columns([1, 3])
@@ -293,7 +281,7 @@ if st.button(download_label):
                     elif "صوت فقط" in quality:
                         ydl_opts['format'] = 'bestaudio/best'
                         ydl_opts['postprocessors'] = [{
-                            'key': 'IPBasedExtractor' if 'IPBasedExtractor' in globals() else 'FFmpegExtractAudio',
+                            'key': 'FFmpegExtractAudio',
                             'preferredcodec': 'mp3',
                             'preferredquality': '192',
                         }]
