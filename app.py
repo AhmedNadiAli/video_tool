@@ -80,7 +80,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("📥 أداة التحميل الذكية بالذكاء الاصطناعي")
-st.markdown("<p style='color: #00E676; font-weight: 700;'>لصق تلقائي • اكتشاف المنصة • عرض التفاصيل • تحميل مباشر</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #00E676; font-weight: 700;'>فحص فائق السرعة • تجاوز الحظر • تحميل مباشر</p>", unsafe_allow_html=True)
 
 # Initialize session state
 if 'playlist_entries' not in st.session_state:
@@ -125,7 +125,6 @@ st.components.v1.html("""
 
 url = st.text_input("ألصق الرابط هنا:", value=st.session_state.url_input, placeholder="https://...", key="url_input")
 
-# Auto-detect platform based on URL keywords
 if url:
     url_lower = url.lower()
     if "tiktok.com" in url_lower:
@@ -165,9 +164,15 @@ if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
     if not url.strip():
         st.warning("⚠️ الرجاء إدخال الرابط أولاً!")
     else:
-        with st.spinner("⏳ جاري فحص الرابط واستخراج تفاصيل الفيديوهات..."):
+        with st.spinner("⚡ جاري فحص الرابط بسرعة فائقة..."):
             try:
-                ydl_opts = {'quiet': True}
+                # Anti-bot options using Android/Web player clients to bypass YouTube bot detection
+                ydl_opts = {
+                    'extract_flat': True,
+                    'quiet': True,
+                    'geo_bypass': True,
+                    'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
+                }
                 with YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(url, download=False)
                     
@@ -276,6 +281,8 @@ if st.button(download_label):
                 
                 ydl_opts = {
                     'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
+                    'geo_bypass': True,
+                    'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
                 }
 
                 if "YouTube" in platform:
@@ -286,7 +293,7 @@ if st.button(download_label):
                     elif "صوت فقط" in quality:
                         ydl_opts['format'] = 'bestaudio/best'
                         ydl_opts['postprocessors'] = [{
-                            'key': 'FFmpegExtractAudio',
+                            'key': 'IPBasedExtractor' if 'IPBasedExtractor' in globals() else 'FFmpegExtractAudio',
                             'preferredcodec': 'mp3',
                             'preferredquality': '192',
                         }]
@@ -309,7 +316,7 @@ if st.button(download_label):
                     st.success(f"✅ تم بنجاح تحميل {len(selected_videos)} فيديو من القائمة!")
                     st.session_state.download_history.append(f"قائمة تشغيل: {st.session_state.playlist_title} ({len(selected_videos)} فيديو)")
                 else:
-                    ydl_opts['noplaylist'] = Type if 'Type' in globals() else True
+                    ydl_opts['noplaylist'] = True
                     with YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=True)
                         filename = ydl.prepare_filename(info)
