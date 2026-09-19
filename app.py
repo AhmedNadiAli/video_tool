@@ -31,20 +31,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("📥 أداة تحميل الفيديوهات وقوائم التشغيل والريلز")
-st.markdown("<p style='text-align: center; color: gray;'>يوتيوب (مع بحث وتحديد سريع للقوائم) • تيك توك • انستاجرام</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: gray;'>يوتيوب • تيك توك • انستاجرام (مع اللصق التلقائي)</p>", unsafe_allow_html=True)
 
-# Initialize session state
 if 'playlist_entries' not in st.session_state:
     st.session_state.playlist_entries = None
 if 'playlist_title' not in st.session_state:
     st.session_state.playlist_title = ""
 if 'url_input' not in st.session_state:
     st.session_state.url_input = ""
+if 'selection_mode' not in st.session_state:
+    st.session_state.selection_mode = "all"
 
 def reset_app():
     st.session_state.playlist_entries = None
     st.session_state.playlist_title = ""
     st.session_state.url_input = ""
+    st.session_state.selection_mode = "all"
     st.rerun()
 
 col_title, col_reset = st.columns([4, 1])
@@ -57,7 +59,23 @@ platform = st.selectbox(
     ["YouTube", "TikTok Reels", "Instagram Reels"]
 )
 
-url = st.text_input("ألصق الرابط هنا:", value=st.session_state.url_input, placeholder="https://...", key="url_input")
+# URL Input with Auto-Paste helper info
+col_url, col_paste = st.columns([4, 1])
+with col_url:
+    url = st.text_input("ألصق الرابط هنا:", value=st.session_state.url_input, placeholder="https://...", key="url_input")
+
+with col_paste:
+    st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
+    # JavaScript clipboard reader button
+    st.components.v1.html("""
+        <button onclick="navigator.clipboard.readText().then(text => {
+            const input = parent.document.querySelector('input[aria-label*=\\'ألصق الرابط هنا\\']');
+            if(input) {
+                input.value = text;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        })" style="background-color: #2b313e; color: white; border: 1px solid #ff4b4b; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%;">📋 لصق</button>
+    """, height=45)
 
 if "YouTube" in platform:
     quality = st.selectbox(
@@ -91,6 +109,7 @@ if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
                     if info and 'entries' in info:
                         st.session_state.playlist_entries = list(info['entries'])
                         st.session_state.playlist_title = info.get('title', 'قائمة تشغيل يوتيوب')
+                        st.session_state.selection_mode = "all"
                         st.success(f"✅ تم اكتشاف قائمة تشغيل: '{st.session_state.playlist_title}' (عدد الفيديوهات: {len(st.session_state.playlist_entries)})")
                     else:
                         st.session_state.playlist_entries = None
@@ -102,20 +121,25 @@ selected_videos = []
 if st.session_state.playlist_entries:
     st.markdown(f"### 📋 الفيديوهات في قائمة: **{st.session_state.playlist_title}**")
     
-    # Search / Filter box for large playlists
     search_query = st.text_input("🔎 بحث سريع عن فيديو بالاسم داخل القائمة:", placeholder="اكتب للبحث...")
     
-    # Quick selection controls
     c1, c2, c3, c4 = st.columns(4)
-    select_all = c1.button("تحديد الكل")
-    deselect_all = c2.button("إلغاء الكل")
-    select_first_10 = c3.button("أول 10")
-    select_first_20 = c4.button("أول 20")
+    if c1.button("تحديد الكل"):
+        st.session_state.selection_mode = "all"
+        st.rerun()
+    if c2.button("إلغاء الكل"):
+        st.session_state.selection_mode = "none"
+        st.rerun()
+    if c3.button("أول 10"):
+        st.session_state.selection_mode = "first_10"
+        st.rerun()
+    if c4.button("أول 20"):
+        st.session_state.selection_mode = "first_20"
+        st.rerun()
     
     for idx, entry in enumerate(st.session_state.playlist_entries):
         v_title = entry.get('title', f"فيديو #{idx+1}")
         
-        # Filter by search query if provided
         if search_query and search_query.lower() not in v_title.lower():
             continue
             
@@ -126,16 +150,15 @@ if st.session_state.playlist_entries:
         if not thumbnail_url and v_id:
             thumbnail_url = f"https://i.ytimg.com/vi/{v_id}/mqdefault.jpg"
 
-        # Determine default checkbox state based on quick buttons or default True
         default_val = True
-        if deselect_all:
+        if st.session_state.selection_mode == "none":
             default_val = False
-        elif select_first_10 and idx < 10:
+        elif st.session_state.selection_mode == "first_10":
+            default_val = (idx < 10)
+        elif st.session_state.selection_mode == "first_20":
+            default_val = (idx < 20)
+        elif st.session_state.selection_mode == "all":
             default_val = True
-        elif select_first_20 and idx < 20:
-            default_val = True
-        elif deselect_all:
-            default_val = False
 
         cols = st.columns([1, 3])
         with cols[0]:
