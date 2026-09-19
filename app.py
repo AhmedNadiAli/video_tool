@@ -9,29 +9,83 @@ st.set_page_config(
     layout="centered"
 )
 
+# Custom Black & Green Theme with Glowing Effects and Bold Fonts
 st.markdown("""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Cairo', sans-serif !important;
+        background-color: #050505;
+        color: #f1f1f1;
+    }
+    
+    .main {
+        padding: 1.5rem;
+        background: radial-gradient(circle at 50% 10%, rgba(0, 255, 102, 0.08) 0%, rgba(5, 5, 5, 1) 70%);
+    }
+    
+    /* Green Glowing Buttons */
     .stButton>button {
         width: 100%;
-        border-radius: 10px;
+        border-radius: 12px;
         height: 50px;
-        font-weight: bold;
+        font-weight: 700;
         font-size: 16px;
-        background-color: #FF4B4B;
-        color: white;
+        background-color: #00E676;
+        color: #000000;
+        border: none;
+        box-shadow: 0 0 15px rgba(0, 230, 118, 0.4);
+        transition: all 0.3s ease;
     }
     .stButton>button:hover {
-        background-color: #ff2b2b;
+        background-color: #00C853;
+        box-shadow: 0 0 25px rgba(0, 230, 118, 0.8);
+        transform: translateY(-2px);
     }
-    h1 {
-        text-align: center;
-        font-size: 22px !important;
+    
+    /* Headers & Text */
+    h1, h2, h3 {
+        font-weight: 900 !important;
+        color: #ffffff;
+        text-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
+    }
+    
+    p, label, span {
+        font-weight: 600 !important;
+    }
+    
+    /* Input & Select styling */
+    .stTextInput>div>div>input, .stSelectbox>div>div>select {
+        border-radius: 10px;
+        border: 2px solid #222222;
+        background-color: #121212;
+        color: #ffffff;
+        font-weight: 600;
+    }
+    .stTextInput>div>div>input:focus {
+        border-color: #00E676;
+        box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
+    }
+
+    /* Mobile & Tablet Responsive Adjustments */
+    @media (max-width: 768px) {
+        .main {
+            padding: 0.8rem;
+        }
+        h1 {
+            font-size: 20px !important;
+        }
+        .stButton>button {
+            height: 46px;
+            font-size: 15px;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("📥 أداة تحميل الفيديوهات وقوائم التشغيل والريلز")
-st.markdown("<p style='text-align: center; color: gray;'>يوتيوب • تيك توك • انستاجرام (مع اللصق التلقائي)</p>", unsafe_allow_html=True)
+st.title("📥 أداة تحميل الفيديوهات والريلز الذكية")
+st.markdown("<p style='color: #00E676; font-weight: 700;'>يوتيوب • تيك توك • انستاجرام (أداء عالي وسرعة فائقة)</p>", unsafe_allow_html=True)
 
 if 'playlist_entries' not in st.session_state:
     st.session_state.playlist_entries = None
@@ -59,14 +113,13 @@ platform = st.selectbox(
     ["YouTube", "TikTok Reels", "Instagram Reels"]
 )
 
-# URL Input with Auto-Paste helper info
+# URL Input with Paste button
 col_url, col_paste = st.columns([4, 1])
 with col_url:
     url = st.text_input("ألصق الرابط هنا:", value=st.session_state.url_input, placeholder="https://...", key="url_input")
 
 with col_paste:
     st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
-    # JavaScript clipboard reader button
     st.components.v1.html("""
         <button onclick="navigator.clipboard.readText().then(text => {
             const input = parent.document.querySelector('input[aria-label*=\\'ألصق الرابط هنا\\']');
@@ -74,7 +127,7 @@ with col_paste:
                 input.value = text;
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             }
-        })" style="background-color: #2b313e; color: white; border: 1px solid #ff4b4b; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%;">📋 لصق</button>
+        })" style="background-color: #121212; color: #00E676; border: 2px solid #00E676; padding: 10px 10px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; box-shadow: 0 0 10px rgba(0,230,118,0.2);">📋 لصق</button>
     """, height=45)
 
 if "YouTube" in platform:
@@ -96,11 +149,12 @@ else:
         ]
     )
 
+st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
 if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
     if not url.strip():
         st.warning("⚠️ الرجاء إدخال الرابط أولاً!")
     else:
-        with st.spinner("⏳ جاري فحص الرابط واستخراج تفاصيل الفيديوهات والـ Thumbnails..."):
+        with st.spinner("⏳ جاري فحص الرابط واستخراج تفاصيل الفيديوهات..."):
             try:
                 ydl_opts = {'extract_flat': True, 'quiet': True}
                 with YoutubeDL(ydl_opts) as ydl:
@@ -137,13 +191,13 @@ if st.session_state.playlist_entries:
         st.session_state.selection_mode = "first_20"
         st.rerun()
     
+    st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
     for idx, entry in enumerate(st.session_state.playlist_entries):
         v_title = entry.get('title', f"فيديو #{idx+1}")
         
         if search_query and search_query.lower() not in v_title.lower():
             continue
-            
-        v_id = entry.get('id')
+            v_id = entry.get('id')
         v_url = entry.get('url') or entry.get('webpage_url') or f"https://www.youtube.com/watch?v={v_id}"
         
         thumbnail_url = entry.get('thumbnail')
@@ -170,6 +224,7 @@ if st.session_state.playlist_entries:
                 selected_videos.append(v_url)
         st.markdown("---")
 
+st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
 download_label = "🚀 بدء تحميل الفيديوهات المحددة من القائمة" if st.session_state.playlist_entries else "🚀 بدء التحميل"
 
 if st.button(download_label):
@@ -244,4 +299,4 @@ if st.button(download_label):
                 st.error(f"❌ حدث خطأ أثناء التحميل: {str(e)}")
 
 st.markdown("---")
-st.markdown("<p style='text-align: center; font-size: 12px; color: gray;'>يعمل على Streamlit Community Cloud</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-size: 11px; color: gray;'>يعمل على Streamlit Community Cloud (متوافق مع جميع الأجهزة)</p>", unsafe_allow_html=True)
