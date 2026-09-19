@@ -103,6 +103,20 @@ def reset_app():
     st.session_state.video_details = None
     st.rerun()
 
+def on_selection_change():
+    mode = st.session_state.sel_mode
+    if st.session_state.playlist_entries:
+        for idx, entry in enumerate(st.session_state.playlist_entries):
+            key = f"vid_{idx}"
+            if mode == "تحديد الكل":
+                st.session_state[key] = True
+            elif mode == "إلغاء الكل":
+                st.session_state[key] = False
+            elif mode == "أول 10":
+                st.session_state[key] = (idx < 10)
+            elif mode == "أول 20":
+                st.session_state[key] = (idx < 20)
+
 col_title, col_reset = st.columns([4, 1])
 with col_reset:
     if st.button("🔄 إعادة ضبط"):
@@ -176,6 +190,9 @@ if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
                         st.session_state.playlist_entries = list(info['entries'])
                         st.session_state.playlist_title = info.get('title', 'قائمة تشغيل يوتيوب')
                         st.session_state.video_details = None
+                        # Initialize default checkboxes in session state
+                        for idx, _ in enumerate(st.session_state.playlist_entries):
+                            st.session_state[f"vid_{idx}"] = True
                         st.success(f"✅ تم اكتشاف قائمة تشغيل: '{st.session_state.playlist_title}' (عدد الفيديوهات: {len(st.session_state.playlist_entries)})")
                     else:
                         st.session_state.playlist_entries = None
@@ -215,11 +232,13 @@ if st.session_state.playlist_entries:
     
     search_query = st.text_input("🔎 بحث سريع عن فيديو بالاسم داخل القائمة:", placeholder="اكتب للبحث...")
     
-    # Reliable Selection Mode using Radio Buttons above
-    selection_mode = st.radio(
+    # Radio with on_change callback to instantly update all checkbox states in session_state
+    st.radio(
         "طريقة التحديد السريع:",
         ["تحديد الكل", "إلغاء الكل", "أول 10", "أول 20"],
-        horizontal=True
+        horizontal=True,
+        key="sel_mode",
+        on_change=on_selection_change
     )
     
     st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
@@ -236,22 +255,16 @@ if st.session_state.playlist_entries:
         if not thumbnail_url and v_id:
             thumbnail_url = f"https://i.ytimg.com/vi/{v_id}/mqdefault.jpg"
 
-        default_val = True
-        if selection_mode == "إلغاء الكل":
-            default_val = False
-        elif selection_mode == "أول 10":
-            default_val = (idx < 10)
-        elif selection_mode == "أول 20":
-            default_val = (idx < 20)
-        elif selection_mode == "تحديد الكل":
-            default_val = True
+        key = f"vid_{idx}"
+        if key not in st.session_state:
+            st.session_state[key] = True
 
         cols = st.columns([1, 3])
         with cols[0]:
             if thumbnail_url:
                 st.image(thumbnail_url, use_container_width=True)
         with cols[1]:
-            is_checked = st.checkbox(f"{idx+1}. {v_title}", value=default_val, key=f"vid_{idx}")
+            is_checked = st.checkbox(f"{idx+1}. {v_title}", key=key)
             if is_checked:
                 selected_videos.append(v_url)
         st.markdown("---")
@@ -317,7 +330,7 @@ if st.button(download_label):
                     if os.path.exists(filename):
                         file_size_mb = os.path.getsize(filename) / (1024 * 1024)
                         st.success(f"✅ تم تجهيز الفيديو بنجاح! (الحجم: {file_size_mb:.1f} MB)")
-                        st.session_state.download_history.append(f"فردي: {v_title} [{quality}]")
+                        st.session_state.download_history.download_history.append(f"فردي: {v_title} [{quality}]") if hasattr(st.session_state.download_history, 'download_history') else st.session_state.download_history.append(f"فردي: {v_title} [{quality}]")
                         
                         with open(filename, "rb") as f:
                             file_bytes = f.read()
