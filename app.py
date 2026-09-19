@@ -80,7 +80,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("📥 أداة التحميل الذكية بالذكاء الاصطناعي")
-st.markdown("<p style='color: #00E676; font-weight: 700;'>تحديد ذكي • تجاوز الحظر • تحميل مباشر</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #00E676; font-weight: 700;'>فيديوهات • ريلز • صور تيك توك • تحميل مباشر</p>", unsafe_allow_html=True)
 
 # Initialize session state
 if 'playlist_entries' not in st.session_state:
@@ -161,6 +161,14 @@ if "YouTube" in platform:
             "صوت فقط (MP3)"
         ]
     )
+elif "TikTok" in platform:
+    quality = st.selectbox(
+        "اختر الصيغة:",
+        [
+            "أفضل جودة (فيديو أو منشور صور)",
+            "صوت فقط (MP3)"
+        ]
+    )
 else:
     quality = st.selectbox(
         "اختر الصيغة:",
@@ -190,20 +198,19 @@ if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
                         st.session_state.playlist_entries = list(info['entries'])
                         st.session_state.playlist_title = info.get('title', 'قائمة تشغيل يوتيوب')
                         st.session_state.video_details = None
-                        # Initialize default checkboxes in session state
                         for idx, _ in enumerate(st.session_state.playlist_entries):
                             st.session_state[f"vid_{idx}"] = True
                         st.success(f"✅ تم اكتشاف قائمة تشغيل: '{st.session_state.playlist_title}' (عدد الفيديوهات: {len(st.session_state.playlist_entries)})")
                     else:
                         st.session_state.playlist_entries = None
                         st.session_state.video_details = {
-                            'title': info.get('title', 'غير معروف'),
+                            'title': info.get('title', 'منشور / فيديو تيك توك أو يوتيوب'),
                             'uploader': info.get('uploader') or info.get('channel', 'غير معروف'),
                             'duration': int(info.get('duration', 0)),
                             'views': info.get('view_count', 0),
                             'thumbnail': info.get('thumbnail')
                         }
-                        st.success("✅ تم فحص الفيديو بنجاح! يمكنك الضغط على زر التحميل أدناه.")
+                        st.success("✅ تم فحص المحتوى بنجاح! يمكنك الضغط على زر التحميل أدناه.")
             except Exception as e:
                 st.error(f"❌ حدث خطأ أثناء الفحص: {str(e)}")
 
@@ -216,11 +223,11 @@ if st.session_state.video_details:
     
     st.markdown(f"""
         <div style="background-color: #121212; border: 2px solid #00E676; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 0 10px rgba(0,230,118,0.2);">
-            <h4 style="color: #00E676; margin-top:0;">📊 معلومات الفيديو:</h4>
-            <p><b>📌 العنوان:</b> {v['title']}</p>
-            <p><b>👤 القناة / الناشر:</b> {v['uploader']}</p>
+            <h4 style="color: #00E676; margin-top:0;">📊 معلومات المحتوى:</h4>
+            <p><b>📌 العنوان / الوصف:</b> {v['title']}</p>
+            <p><b>👤 الناشر:</b> {v['uploader']}</p>
             <p><b>⏱️ المدة:</b> {duration_str}</p>
-            <p><b>👁️ عدد المشاهدات:</b> {views_str}</p>
+            <p><b>👁️ المشاهدات / التفاعل:</b> {views_str}</p>
         </div>
     """, unsafe_allow_html=True)
     if v['thumbnail']:
@@ -232,7 +239,6 @@ if st.session_state.playlist_entries:
     
     search_query = st.text_input("🔎 بحث سريع عن فيديو بالاسم داخل القائمة:", placeholder="اكتب للبحث...")
     
-    # Radio with on_change callback to instantly update all checkbox states in session_state
     st.radio(
         "طريقة التحديد السريع:",
         ["تحديد الكل", "إلغاء الكل", "أول 10", "أول 20"],
@@ -283,6 +289,7 @@ if st.button(download_label):
                 ydl_opts = {
                     'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
                     'geo_bypass': True,
+                    'writeimages': True, # Support downloading images for TikTok photo posts
                     'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
                 }
 
@@ -314,33 +321,47 @@ if st.button(download_label):
                 if st.session_state.playlist_entries and selected_videos:
                     with YoutubeDL(ydl_opts) as ydl:
                         ydl.download(selected_videos)
-                    st.success(f"✅ تم بنجاح تحميل {len(selected_videos)} فيديو من القائمة!")
-                    st.session_state.download_history.append(f"قائمة تشغيل: {st.session_state.playlist_title} ({len(selected_videos)} فيديو)")
+                    st.success(f"✅ تم بنجاح تحميل {len(selected_videos)} عنصر من القائمة!")
+                    st.session_state.download_history.append(f"قائمة تشغيل: {st.session_state.playlist_title} ({len(selected_videos)} عنصر)")
                 else:
                     ydl_opts['noplaylist'] = True
                     with YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=True)
                         filename = ydl.prepare_filename(info)
-                        v_title = info.get('title', 'فيديو')
+                        v_title = info.get('title', 'محتوى')
                         
                         if "صوت" in quality or "MP3" in quality:
                             base, _ = os.path.splitext(filename)
                             filename = base + ".mp3"
 
+                    # Handle case where TikTok photo post downloads images instead of video
+                    if not os.path.exists(filename):
+                        # Check temp dir for any downloaded image or file
+                        files = os.listdir(temp_dir)
+                        if files:
+                            filename = os.path.join(temp_dir, files[0])
+
                     if os.path.exists(filename):
                         file_size_mb = os.path.getsize(filename) / (1024 * 1024)
-                        st.success(f"✅ تم تجهيز الفيديو بنجاح! (الحجم: {file_size_mb:.1f} MB)")
-                        st.session_state.download_history.download_history.append(f"فردي: {v_title} [{quality}]") if hasattr(st.session_state.download_history, 'download_history') else st.session_state.download_history.append(f"فردي: {v_title} [{quality}]")
+                        st.success(f"✅ تم تجهيز المحتوى بنجاح! (الحجم: {file_size_mb:.1f} MB)")
+                        st.session_state.download_history.append(f"فردي: {v_title} [{quality}]")
                         
                         with open(filename, "rb") as f:
                             file_bytes = f.read()
                         
                         file_name_download = os.path.basename(filename)
+                        
+                        mime_type = "video/mp4"
+                        if filename.endswith(".mp3"):
+                            mime_type = "audio/mpeg"
+                        elif filename.endswith((".jpg", ".jpeg", ".png", ".webp")):
+                            mime_type = "image/jpeg"
+
                         st.download_button(
                             label="📥 اضغط هنا لتنزيل الملف على هاتفك",
                             data=file_bytes,
                             file_name=file_name_download,
-                            mime="audio/mpeg" if filename.endswith(".mp3") else "video/mp4"
+                            mime=mime_type
                         )
                     else:
                         st.error("❌ لم يتم العثور على الملف بعد التحميل.")
