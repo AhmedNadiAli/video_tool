@@ -31,7 +31,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("📥 أداة تحميل الفيديوهات وقوائم التشغيل والريلز")
-st.markdown("<p style='text-align: center; color: gray;'>يوتيوب (مع الصور المصغرة واختيار فيديوهات القائمة) • تيك توك • انستاجرام</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: gray;'>يوتيوب (مع بحث وتحديد سريع للقوائم) • تيك توك • انستاجرام</p>", unsafe_allow_html=True)
 
 # Initialize session state
 if 'playlist_entries' not in st.session_state:
@@ -47,7 +47,6 @@ def reset_app():
     st.session_state.url_input = ""
     st.rerun()
 
-# Top action bar with Reset button
 col_title, col_reset = st.columns([4, 1])
 with col_reset:
     if st.button("🔄 إعادة ضبط"):
@@ -79,7 +78,6 @@ else:
         ]
     )
 
-# Button to analyze URL (especially for playlists)
 if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
     if not url.strip():
         st.warning("⚠️ الرجاء إدخال الرابط أولاً!")
@@ -100,36 +98,55 @@ if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
             except Exception as e:
                 st.error(f"❌ حدث خطأ أثناء الفحص: {str(e)}")
 
-# If it's a playlist, show thumbnails, titles, and checkboxes for each video
 selected_videos = []
 if st.session_state.playlist_entries:
-    st.markdown(f"### 📋 اختر الفيديوهات المطلوبة من قائمة: **{st.session_state.playlist_title}**")
+    st.markdown(f"### 📋 الفيديوهات في قائمة: **{st.session_state.playlist_title}**")
     
-    col1, col2 = st.columns(2)
-    select_all = col1.checkbox("تحديد الكل", value=True)
+    # Search / Filter box for large playlists
+    search_query = st.text_input("🔎 بحث سريع عن فيديو بالاسم داخل القائمة:", placeholder="اكتب للبحث...")
+    
+    # Quick selection controls
+    c1, c2, c3, c4 = st.columns(4)
+    select_all = c1.button("تحديد الكل")
+    deselect_all = c2.button("إلغاء الكل")
+    select_first_10 = c3.button("أول 10")
+    select_first_20 = c4.button("أول 20")
     
     for idx, entry in enumerate(st.session_state.playlist_entries):
         v_title = entry.get('title', f"فيديو #{idx+1}")
+        
+        # Filter by search query if provided
+        if search_query and search_query.lower() not in v_title.lower():
+            continue
+            
         v_id = entry.get('id')
         v_url = entry.get('url') or entry.get('webpage_url') or f"https://www.youtube.com/watch?v={v_id}"
         
-        # Get thumbnail URL
         thumbnail_url = entry.get('thumbnail')
         if not thumbnail_url and v_id:
             thumbnail_url = f"https://i.ytimg.com/vi/{v_id}/mqdefault.jpg"
 
-        # Layout for each video item (Thumbnail + Checkbox with Title)
+        # Determine default checkbox state based on quick buttons or default True
+        default_val = True
+        if deselect_all:
+            default_val = False
+        elif select_first_10 and idx < 10:
+            default_val = True
+        elif select_first_20 and idx < 20:
+            default_val = True
+        elif deselect_all:
+            default_val = False
+
         cols = st.columns([1, 3])
         with cols[0]:
             if thumbnail_url:
                 st.image(thumbnail_url, use_container_width=True)
         with cols[1]:
-            is_checked = st.checkbox(f"{idx+1}. {v_title}", value=select_all, key=f"vid_{idx}")
+            is_checked = st.checkbox(f"{idx+1}. {v_title}", value=default_val, key=f"vid_{idx}")
             if is_checked:
                 selected_videos.append(v_url)
         st.markdown("---")
 
-# Download button
 download_label = "🚀 بدء تحميل الفيديوهات المحددة من القائمة" if st.session_state.playlist_entries else "🚀 بدء التحميل"
 
 if st.button(download_label):
