@@ -79,8 +79,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("📥 أداة تحميل الفيديوهات والريلز الذكية")
-st.markdown("<p style='color: #00E676; font-weight: 700;'>يوتيوب • تيك توك • انستاجرام (مع معلومات تفصيلية وسجل تحميلات)</p>", unsafe_allow_html=True)
+st.title("📥 أداة التحميل الذكية بالذكاء الاصطناعي")
+st.markdown("<p style='color: #00E676; font-weight: 700;'>لصق تلقائي • اكتشاف المنصة • عرض التفاصيل • تحميل مباشر</p>", unsafe_allow_html=True)
 
 # Initialize session state
 if 'playlist_entries' not in st.session_state:
@@ -95,6 +95,8 @@ if 'video_details' not in st.session_state:
     st.session_state.video_details = None
 if 'download_history' not in st.session_state:
     st.session_state.download_history = []
+if 'detected_platform' not in st.session_state:
+    st.session_state.detected_platform = "YouTube"
 
 def reset_app():
     st.session_state.playlist_entries = None
@@ -109,26 +111,35 @@ with col_reset:
     if st.button("🔄 إعادة ضبط"):
         reset_app()
 
+# Smart Auto-Paste Button
+st.markdown("<div style='margin-bottom: 5px;'></div>", unsafe_allow_html=True)
+st.components.v1.html("""
+    <button onclick="navigator.clipboard.readText().then(text => {
+        const input = parent.document.querySelector('input[aria-label*=\\'ألصق الرابط هنا\\']');
+        if(input) {
+            input.value = text;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    })" style="background-color: #00E676; color: #000; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; box-shadow: 0 0 15px rgba(0,230,118,0.4);">⚡ لصق تلقائي وتحليل فوري من الحافظة</button>
+""", height=60)
+
+url = st.text_input("ألصق الرابط هنا:", value=st.session_state.url_input, placeholder="https://...", key="url_input")
+
+# Auto-detect platform based on URL keywords
+if url:
+    url_lower = url.lower()
+    if "tiktok.com" in url_lower:
+        st.session_state.detected_platform = "TikTok Reels"
+    elif "instagram.com" in url_lower:
+        st.session_state.detected_platform = "Instagram Reels"
+    else:
+        st.session_state.detected_platform = "YouTube"
+
 platform = st.selectbox(
-    "اختر المنصة:",
-    ["YouTube", "TikTok Reels", "Instagram Reels"]
+    "المنصة المكتشفة:",
+    ["YouTube", "TikTok Reels", "Instagram Reels"],
+    index=["YouTube", "TikTok Reels", "Instagram Reels"].index(st.session_state.detected_platform)
 )
-
-col_url, col_paste = st.columns([4, 1])
-with col_url:
-    url = st.text_input("ألصق الرابط هنا:", value=st.session_state.url_input, placeholder="https://...", key="url_input")
-
-with col_paste:
-    st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
-    st.components.v1.html("""
-        <button onclick="navigator.clipboard.readText().then(text => {
-            const input = parent.document.querySelector('input[aria-label*=\\'ألصق الرابط هنا\\']');
-            if(input) {
-                input.value = text;
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-        })" style="background-color: #121212; color: #00E676; border: 2px solid #00E676; padding: 10px 10px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; box-shadow: 0 0 10px rgba(0,230,118,0.2);">📋 لصق</button>
-    """, height=45)
 
 if "YouTube" in platform:
     quality = st.selectbox(
@@ -175,7 +186,7 @@ if st.button("🔍 فحص الرابط واكتشاف المحتوى"):
                             'views': info.get('view_count', 0),
                             'thumbnail': info.get('thumbnail')
                         }
-                        st.success("✅ تم فحص الفيديو بنجاح!")
+                        st.success("✅ تم فحص الفيديو بنجاح! يمكنك الضغط على زر التحميل أدناه.")
             except Exception as e:
                 st.error(f"❌ حدث خطأ أثناء الفحص: {str(e)}")
 
@@ -298,7 +309,7 @@ if st.button(download_label):
                     st.success(f"✅ تم بنجاح تحميل {len(selected_videos)} فيديو من القائمة!")
                     st.session_state.download_history.append(f"قائمة تشغيل: {st.session_state.playlist_title} ({len(selected_videos)} فيديو)")
                 else:
-                    ydl_opts['noplaylist'] = True
+                    ydl_opts['noplaylist'] = Type if 'Type' in globals() else True
                     with YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=True)
                         filename = ydl.prepare_filename(info)
