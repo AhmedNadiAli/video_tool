@@ -11,70 +11,67 @@ import streamlit as st
 from yt_dlp import YoutubeDL
 
 # ---------------------------------------------------------
-# Page Configuration & Metadata
+# 1. إعدادات الصفحة الأساسية (Page Configuration)
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="MediaMaster Pro | محمل الفيديوهات الذكي",
-    page_icon="⚡",
+    page_title="MediaMaster Pro | محمل الفيديوهات الشامل",
+    page_icon="📥",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
 # ---------------------------------------------------------
-# Advanced Design & Styling System (Glassmorphism + Neon Dark)
+# 2. نظام التصميم والأنماط (Modern Glassmorphism UI)
+# متوافق 100% مع جميع إصدارات Streamlit المحلية و Streamlit Cloud
 # ---------------------------------------------------------
-st.html("""
+st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
     
     :root {
         --primary: #00E676;
-        --primary-glow: rgba(0, 230, 118, 0.35);
-        --accent-cyan: #00f2fe;
+        --primary-hover: #00C853;
         --accent-blue: #1877F2;
-        --accent-pink: #FE2C55;
-        --accent-insta: #E1306C;
-        --accent-yt: #FF0000;
+        --accent-cyan: #00F2FE;
         --bg-dark: #080B11;
-        --card-bg: rgba(18, 24, 38, 0.75);
+        --card-bg: rgba(17, 24, 39, 0.75);
         --card-border: rgba(255, 255, 255, 0.08);
-        --card-hover: rgba(255, 255, 255, 0.14);
+        --text-main: #F8FAFC;
         --text-muted: #94A3B8;
     }
     
     html, body, [class*="css"] {
         font-family: 'Cairo', 'Plus Jakarta Sans', sans-serif !important;
         background-color: var(--bg-dark);
-        color: #F8FAFC;
+        color: var(--text-main);
         direction: rtl;
         text-align: right;
     }
     
-    /* Background Ambience */
+    /* خلفية متدرجة عصرية مع إضاءات ناعمة */
     .stApp {
-        background: radial-gradient(circle at 50% 0%, rgba(0, 230, 118, 0.09) 0%, transparent 50%),
-                    radial-gradient(circle at 85% 20%, rgba(24, 119, 242, 0.07) 0%, transparent 45%),
-                    radial-gradient(circle at 15% 30%, rgba(254, 44, 85, 0.07) 0%, transparent 45%),
-                    #080B11;
+        background: radial-gradient(circle at 50% 0%, rgba(0, 230, 118, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 90% 15%, rgba(24, 119, 242, 0.08) 0%, transparent 40%),
+                    radial-gradient(circle at 10% 25%, rgba(254, 44, 85, 0.07) 0%, transparent 40%),
+                    var(--bg-dark);
         background-attachment: fixed;
     }
     
-    /* Container block */
     .block-container {
-        padding-top: 2rem !important;
+        padding-top: 1.8rem !important;
         padding-bottom: 3rem !important;
         max-width: 780px !important;
     }
     
-    /* Top Header Badge */
-    .header-badge {
+    /* شارة الترويسة */
+    .hero-badge {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 6px 16px;
+        padding: 5px 14px;
         border-radius: 999px;
-        background: rgba(0, 230, 118, 0.1);
-        border: 1px solid rgba(0, 230, 118, 0.3);
+        background: rgba(0, 230, 118, 0.12);
+        border: 1px solid rgba(0, 230, 118, 0.35);
         color: var(--primary);
         font-size: 13px;
         font-weight: 700;
@@ -82,7 +79,7 @@ st.html("""
         box-shadow: 0 0 15px rgba(0, 230, 118, 0.15);
     }
     
-    /* Hero Title */
+    /* العناوين */
     .hero-title {
         font-size: 32px;
         font-weight: 900;
@@ -91,103 +88,105 @@ st.html("""
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin: 0;
-        line-height: 1.25;
+        line-height: 1.3;
     }
     
-    .hero-subtitle {
+    .hero-desc {
         color: var(--text-muted);
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 600;
         margin-top: 6px;
         margin-bottom: 20px;
     }
     
-    /* Platform Badges Row */
-    .platform-chips {
+    /* شارات المنصات */
+    .platforms-row {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 24px;
+        margin-bottom: 22px;
     }
-    .chip {
+    .p-tag {
         padding: 5px 12px;
         border-radius: 8px;
         font-size: 12px;
         font-weight: 700;
         background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         display: inline-flex;
         align-items: center;
         gap: 6px;
     }
-    .chip-yt { color: #FF4D4D; border-color: rgba(255, 77, 77, 0.3); }
-    .chip-fb { color: #38BDF8; border-color: rgba(56, 189, 248, 0.3); }
-    .chip-ig { color: #F472B6; border-color: rgba(244, 114, 182, 0.3); }
-    .chip-tt { color: #00F2FE; border-color: rgba(0, 242, 254, 0.3); }
+    .p-yt { color: #FF4D4D; border-color: rgba(255, 77, 77, 0.3); }
+    .p-fb { color: #38BDF8; border-color: rgba(56, 189, 248, 0.3); }
+    .p-ig { color: #F472B6; border-color: rgba(244, 114, 182, 0.3); }
+    .p-tt { color: #00F2FE; border-color: rgba(0, 242, 254, 0.3); }
     
-    /* Glass Cards */
+    /* بطاقة زجاجية */
     .glass-card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
         border-radius: 16px;
         padding: 20px;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
         margin-bottom: 20px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: border 0.3s ease;
     }
     .glass-card:hover {
-        border-color: var(--card-hover);
-        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+        border-color: rgba(255, 255, 255, 0.16);
     }
     
-    /* Form Inputs */
+    /* حقول الإدخال */
     .stTextInput>div>div>input {
         border-radius: 12px !important;
         border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
-        background: rgba(15, 23, 42, 0.7) !important;
+        background: rgba(15, 23, 42, 0.75) !important;
         color: #F8FAFC !important;
-        padding: 14px 16px !important;
+        padding: 12px 16px !important;
         font-weight: 600 !important;
         font-size: 15px !important;
-        transition: all 0.25s ease !important;
         direction: ltr !important;
         text-align: left !important;
+        transition: all 0.25s ease !important;
     }
     .stTextInput>div>div>input:focus {
         border-color: var(--primary) !important;
-        box-shadow: 0 0 20px var(--primary-glow) !important;
+        box-shadow: 0 0 15px rgba(0, 230, 118, 0.3) !important;
     }
     
     .stSelectbox>div>div {
         border-radius: 12px !important;
         border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
-        background: rgba(15, 23, 42, 0.7) !important;
+        background: rgba(15, 23, 42, 0.75) !important;
         font-weight: 700 !important;
         color: #F8FAFC !important;
     }
     
-    /* Action Buttons */
+    /* الأزرار العصرية */
     .stButton>button {
         width: 100%;
         border-radius: 12px !important;
-        height: 52px !important;
+        height: 50px !important;
         font-weight: 800 !important;
         font-size: 16px !important;
-        border: none !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        cursor: pointer !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        letter-spacing: 0.2px !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        color: #F8FAFC !important;
+        transition: all 0.25s ease !important;
+    }
+    .stButton>button:hover {
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-color: rgba(255, 255, 255, 0.25) !important;
+        transform: translateY(-1px) !important;
     }
     
-    /* Primary Download Button */
+    /* زر التحميل الأساسي */
     .stButton>button[kind="primary"], .stButton>button[data-testid="stBaseButton-primary"] {
         background: linear-gradient(135deg, #00E676 0%, #00B0FF 100%) !important;
         color: #050B14 !important;
+        border: none !important;
         box-shadow: 0 4px 20px rgba(0, 230, 118, 0.35) !important;
     }
     .stButton>button[kind="primary"]:hover, .stButton>button[data-testid="stBaseButton-primary"]:hover {
@@ -196,38 +195,31 @@ st.html("""
         filter: brightness(1.08) !important;
     }
     
-    /* Secondary Action Button */
-    .stButton>button[kind="secondary"], .stButton>button[data-testid="stBaseButton-secondary"] {
-        background: rgba(255, 255, 255, 0.06) !important;
-        color: #E2E8F0 !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    }
-    .stButton>button[kind="secondary"]:hover, .stButton>button[data-testid="stBaseButton-secondary"]:hover {
-        background: rgba(255, 255, 255, 0.12) !important;
-        border-color: rgba(255, 255, 255, 0.25) !important;
-        transform: translateY(-1px) !important;
-    }
-    
-    /* Download Result Card */
+    /* زر تنزيل الملف النهائي */
     .stDownloadButton>button {
         width: 100%;
         border-radius: 12px !important;
-        height: 54px !important;
+        height: 52px !important;
         font-size: 16px !important;
         font-weight: 800 !important;
         background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
         color: #FFFFFF !important;
-        box-shadow: 0 4px 25px rgba(16, 185, 129, 0.45) !important;
         border: none !important;
-        animation: pulse-glow 2s infinite ease-in-out;
+        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.45) !important;
+        transition: all 0.25s ease !important;
     }
-    @keyframes pulse-glow {
-        0%, 100% { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); }
-        50% { box-shadow: 0 6px 30px rgba(16, 185, 129, 0.7); }
+    .stDownloadButton>button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.65) !important;
     }
     
-    /* Info Badges */
-    .badge-pill {
+    /* شريط التقدم */
+    .stProgress > div > div > div > div {
+        background: linear-gradient(90deg, #00E676 0%, #00B0FF 100%) !important;
+        border-radius: 999px !important;
+    }
+    
+    .badge-info {
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -238,38 +230,22 @@ st.html("""
         background: rgba(255, 255, 255, 0.06);
         color: #E2E8F0;
     }
-    
-    /* Progress bar styling */
-    .stProgress > div > div > div > div {
-        background: linear-gradient(90deg, #00E676 0%, #00B0FF 100%) !important;
-        border-radius: 999px !important;
-    }
-    
-    /* Mobile responsive tweaks */
-    @media (max-width: 640px) {
-        .hero-title { font-size: 24px; }
-        .hero-subtitle { font-size: 13px; }
-        .glass-card { padding: 14px; }
-        .stButton>button { height: 48px !important; font-size: 15px !important; }
-    }
     </style>
-""")
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Helper Functions: URL Resolution & Platform Detection
+# 3. الدوال المساعدة وتتبع الروابط (Helper Functions)
 # ---------------------------------------------------------
-def resolve_url(input_url: str) -> str:
-    """Resolve Facebook share, short links, or redirects to direct URLs."""
-    input_url = input_url.strip()
-    if not input_url:
-        return input_url
-    
-    # Check if this is a share/redirect link
-    share_domains = ["fb.watch", "/share/r/", "/share/v/", "fb.me", "vt.tiktok.com", "vm.tiktok.com", "youtu.be"]
-    if any(k in input_url.lower() for k in share_domains):
+def resolve_url(url: str) -> str:
+    """تتبع الروابط المختصرة وروابط المشاركة لاستخراج الرابط الأصلي المباشر."""
+    u = url.strip()
+    if not u:
+        return u
+    short_domains = ["fb.watch", "/share/r/", "/share/v/", "fb.me", "vt.tiktok.com", "vm.tiktok.com", "youtu.be"]
+    if any(k in u.lower() for k in short_domains):
         try:
             req = urllib.request.Request(
-                input_url,
+                u,
                 headers={
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
                 }
@@ -280,12 +256,12 @@ def resolve_url(input_url: str) -> str:
                 if final_url:
                     return final_url
         except Exception:
-            return input_url
-    return input_url
+            return u
+    return u
 
 
-def detect_platform_from_url(url: str) -> str:
-    """Intelligently detects social media platform from URL string."""
+def detect_platform(url: str) -> str:
+    """التعرف التلقائي على المنصة بناءً على الرابط."""
     u = url.lower().strip()
     if "tiktok.com" in u:
         return "TikTok Reels"
@@ -298,7 +274,7 @@ def detect_platform_from_url(url: str) -> str:
 
 
 def format_duration(seconds: int) -> str:
-    """Format duration in seconds into human-readable Arabic string."""
+    """تحويل الثواني إلى صيغة وقت مقروءة بالعربية."""
     if not seconds or seconds <= 0:
         return "غير محدد"
     mins, secs = divmod(int(seconds), 60)
@@ -310,164 +286,142 @@ def format_duration(seconds: int) -> str:
     return f"{secs} ثانية"
 
 
-def format_number(num: int) -> str:
-    """Format counts with K, M abbreviations."""
-    if not num:
+def format_views(count: int) -> str:
+    """تنسيق أرقام المشاهدات بصيغة K أو M."""
+    if not count:
         return "غير متوفر"
-    if num >= 1_000_000:
-        return f"{num / 1_000_000:.1f}M"
-    if num >= 1_000:
-        return f"{num / 1_000:.1f}K"
-    return f"{num:,}"
+    if count >= 1_000_000:
+        return f"{count / 1_000_000:.1f}M"
+    if count >= 1_000:
+        return f"{count / 1_000:.1f}K"
+    return f"{count:,}"
 
 
 def sanitize_filename(name: str) -> str:
-    """Sanitize filename to avoid Windows filesystem character errors."""
+    """تنظيف اسم الملف من الحروف والرموز الممنوعة في نظام ويندوز."""
     clean = re.sub(r'[\\/*?:"<>|]', '', name)
     clean = clean.strip().strip('.')
-    return clean[:120] if clean else "download"
-
+    return clean[:90] if clean else "media_file"
 
 # ---------------------------------------------------------
-# Session State Initialization
+# 4. إدارة حالة الجلسة (Session State)
 # ---------------------------------------------------------
 if 'url_input' not in st.session_state:
     st.session_state.url_input = ""
-if 'last_analyzed_url' not in st.session_state:
-    st.session_state.last_analyzed_url = ""
 if 'detected_platform' not in st.session_state:
     st.session_state.detected_platform = "YouTube"
 if 'content_info' not in st.session_state:
     st.session_state.content_info = None
-if 'playlist_entries' not in st.session_state:
-    st.session_state.playlist_entries = None
-if 'download_history' not in st.session_state:
-    st.session_state.download_history = []
 if 'download_ready' not in st.session_state:
     st.session_state.download_ready = None
+if 'download_history' not in st.session_state:
+    st.session_state.download_history = []
 
 # ---------------------------------------------------------
-# UI Header Section
+# 5. الترويسة الرئيسية (Main Header)
 # ---------------------------------------------------------
 col_h1, col_h2 = st.columns([5, 1])
 with col_h1:
-    st.html("""
+    st.markdown("""
         <div>
-            <div class="header-badge">⚡ الجيل الثالث الذكي Pro V3</div>
+            <div class="hero-badge">⚡ الجيل الثالث الذكي Pro V3</div>
             <h1 class="hero-title">أداة التحميل الشاملة للوسائط</h1>
-            <p class="hero-subtitle">تحميل الفيديوهات، الريلز، الصوتيات بجودتها الأصلية بدون أي قيود</p>
+            <p class="hero-desc">تحميل ريلز فيسبوك، انستغرام، يوتيوب، وتيك توك بأعلى جودة أصلية وبدون قيود</p>
         </div>
-    """)
+    """, unsafe_allow_html=True)
 with col_h2:
-    if st.button("🔄 تصفير", help="إعادة تعيين التطبيق ومسح البيانات المؤقتة", type="secondary"):
+    if st.button("🔄 تصفير", help="إعادة تعيين ومسح البيانات"):
         st.session_state.url_input = ""
-        st.session_state.last_analyzed_url = ""
         st.session_state.content_info = None
-        st.session_state.playlist_entries = None
         st.session_state.download_ready = None
         st.rerun()
 
-# Platform Chips
-st.html("""
-    <div class="platform-chips">
-        <span class="chip chip-yt">🔴 يوتيوب (4K / 60FPS)</span>
-        <span class="chip chip-fb">🔵 ريلز فيسبوك (HD)</span>
-        <span class="chip chip-ig">🟣 ريلز انستغرام (أصلي)</span>
-        <span class="chip chip-tt">⚫ تيك توك (بدون علامة مائية)</span>
+st.markdown("""
+    <div class="platforms-row">
+        <span class="p-tag p-yt">🔴 يوتيوب (4K / 60FPS)</span>
+        <span class="p-tag p-fb">🔵 ريلز فيسبوك (HD)</span>
+        <span class="p-tag p-ig">🟣 ريلز انستغرام (أصلي)</span>
+        <span class="p-tag p-tt">⚫ تيك توك (بدون علامة مائية)</span>
     </div>
-""")
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Input & Configuration Card
+# 6. بطاقة إدخال الرابط وتحديد الجودة (Input Card)
 # ---------------------------------------------------------
-with st.container():
-    st.html("<div class='glass-card'>")
-    
-    # URL Input
-    current_url = st.text_input(
-        "رابط المحتوى أو الفيديو:",
-        value=st.session_state.url_input,
-        placeholder="https://www.facebook.com/reel/... أو https://youtube.com/...",
-        help="انسخ الرابط من التطبيق أو المتصفح وضعه هنا"
-    )
-    
-    # Update state if URL changed
-    if current_url != st.session_state.url_input:
-        st.session_state.url_input = current_url
-        if current_url.strip():
-            auto_plat = detect_platform_from_url(current_url)
-            st.session_state.detected_platform = auto_plat
-    
-    # Platform & Quality Selectors
-    col_p, col_q = st.columns([1, 1])
-    
-    platforms = ["YouTube", "Facebook Reels", "Instagram Reels", "TikTok Reels"]
-    curr_idx = platforms.index(st.session_state.detected_platform) if st.session_state.detected_platform in platforms else 0
-    
-    with col_p:
-        selected_platform = st.selectbox(
-            "المنصة المحددة:",
-            platforms,
-            index=curr_idx,
-            help="يتم التعرف عليها تلقائياً ويمكنك التغيير يدوياً"
-        )
-        if selected_platform != st.session_state.detected_platform:
-            st.session_state.detected_platform = selected_platform
-            
-    with col_q:
-        if "YouTube" in selected_platform:
-            quality_options = [
-                "🎬 أفضل جودة فائقة (Best / 4K / 60fps)",
-                "💎 دقة 1080p Full HD (MP4)",
-                "⚡ دقة 720p HD (MP4)",
-                "🎵 صوت فقط فائق النقاء (MP3 - 320kbps)"
-            ]
-        elif "Facebook" in selected_platform:
-            quality_options = [
-                "🎬 أفضل جودة أصلية للريلز (HD)",
-                "⚡ جودة قياسية سريعة (SD)",
-                "🎵 صوت الريلز فقط (MP3)"
-            ]
-        elif "TikTok" in selected_platform:
-            quality_options = [
-                "🎬 أفضل جودة أصلية (بدون علامة مائية)",
-                "📸 صور المنشور كاملة (Slideshow Photos)",
-                "🎵 صوت التيك توك فقط (MP3)"
-            ]
-        else:  # Instagram Reels
-            quality_options = [
-                "🎬 أفضل جودة أصلية للريلز (Original HD)",
-                "🎵 صوت الريلز فقط (MP3)"
-            ]
-            
-        selected_quality = st.selectbox("الجودة / الصيغة المطلوبة:", quality_options)
+st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 
-    # Action Buttons Row (Analyze & Quick Actions)
-    btn_col1, btn_col2 = st.columns([3, 1])
-    with btn_col1:
-        analyze_clicked = st.button("🔍 فحص وتحليل الرابط", type="secondary")
-    with btn_col2:
-        clear_clicked = st.button("🗑️ مسح الرابط", type="secondary")
-        if clear_clicked:
-            st.session_state.url_input = ""
-            st.session_state.content_info = None
-            st.session_state.download_ready = None
-            st.rerun()
+current_url = st.text_input(
+    "رابط الفيديو أو الريلز:",
+    value=st.session_state.url_input,
+    placeholder="ألصق الرابط هنا (https://www.facebook.com/reel/... أو يوتيوب / تيك توك)"
+)
 
-    st.html("</div>")
+# التعرف التلقائي عند تغيير الرابط
+if current_url != st.session_state.url_input:
+    st.session_state.url_input = current_url
+    if current_url.strip():
+        st.session_state.detected_platform = detect_platform(current_url)
+
+col_p, col_q = st.columns([1, 1])
+
+platform_options = ["YouTube", "Facebook Reels", "Instagram Reels", "TikTok Reels"]
+p_idx = platform_options.index(st.session_state.detected_platform) if st.session_state.detected_platform in platform_options else 0
+
+with col_p:
+    selected_platform = st.selectbox("المنصة المكتشفة:", platform_options, index=p_idx)
+    if selected_platform != st.session_state.detected_platform:
+        st.session_state.detected_platform = selected_platform
+
+with col_q:
+    if "YouTube" in selected_platform:
+        quality_options = [
+            "🎬 أفضل جودة فائقة (Best / 4K / 60fps)",
+            "💎 دقة 1080p Full HD (MP4)",
+            "⚡ دقة 720p HD (MP4)",
+            "🎵 صوت فقط عالي النقاء (MP3 - 320kbps)"
+        ]
+    elif "Facebook" in selected_platform:
+        quality_options = [
+            "🎬 أفضل جودة أصلية للريلز (HD)",
+            "⚡ جودة قياسية سريعة (SD)",
+            "🎵 صوت الريلز فقط (MP3)"
+        ]
+    elif "TikTok" in selected_platform:
+        quality_options = [
+            "🎬 أفضل جودة أصلية (بدون علامة مائية)",
+            "📸 صور المنشور كاملة (Slideshow Photos)",
+            "🎵 صوت التيك توك فقط (MP3)"
+        ]
+    else:  # Instagram
+        quality_options = [
+            "🎬 أفضل جودة أصلية للريلز (Original HD)",
+            "🎵 صوت الريلز فقط (MP3)"
+        ]
+        
+    selected_quality = st.selectbox("الجودة / الصيغة المطلوبة:", quality_options)
+
+col_b1, col_b2 = st.columns([3, 1])
+with col_b1:
+    analyze_btn = st.button("🔍 فحص وتحليل الرابط")
+with col_b2:
+    if st.button("🗑️ مسح الرابط"):
+        st.session_state.url_input = ""
+        st.session_state.content_info = None
+        st.session_state.download_ready = None
+        st.rerun()
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Processing: Link Inspection Logic
+# 7. فحص الرابط واستخراج المعلومات (Inspect URL)
 # ---------------------------------------------------------
-if analyze_clicked:
+if analyze_btn:
     if not st.session_state.url_input.strip():
         st.warning("⚠️ الرجاء وضع الرابط أولاً ليتم تحليله!")
     else:
-        with st.status("🔍 جاري فحص الرابط وفك التوجيه...", expanded=True) as status_box:
+        with st.spinner("🔍 جاري فحص الرابط واستخراج بيانات المحتوى..."):
             try:
-                resolved_url = resolve_url(st.session_state.url_input)
-                status_box.write("⚡ جاري استخراج معلومات الفيديو المباشرة...")
-                
+                clean_url = resolve_url(st.session_state.url_input)
                 ydl_opts = {
                     'extract_flat': True,
                     'quiet': True,
@@ -477,24 +431,12 @@ if analyze_clicked:
                     },
                     'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
                 }
-                
                 with YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(resolved_url, download=False)
+                    info = ydl.extract_info(clean_url, download=False)
                     
                     if not info:
-                        status_box.update(label="❌ تعذر العثور على محتوى في هذا الرابط", state="error")
-                    elif 'entries' in info and info['entries']:
-                        # Playlist or Multi-item detected
-                        st.session_state.playlist_entries = list(info['entries'])
-                        st.session_state.content_info = {
-                            'is_playlist': True,
-                            'title': info.get('title', 'قائمة تشغيل'),
-                            'count': len(st.session_state.playlist_entries)
-                        }
-                        status_box.update(label=f"✅ تم اكتشاف قائمة تشغيل تضم {len(st.session_state.playlist_entries)} فيديو!", state="complete")
+                        st.error("❌ تعذر العثور على محتوى متاح عبر هذا الرابط.")
                     else:
-                        # Single Video / Reel
-                        st.session_state.playlist_entries = None
                         title = info.get('title') or (info.get('description', '').split('\n')[0] if info.get('description') else None) or 'ريلز / فيديو'
                         duration = int(info.get('duration') or 0)
                         views = info.get('view_count', 0)
@@ -502,75 +444,71 @@ if analyze_clicked:
                         thumbnail = info.get('thumbnail')
                         
                         st.session_state.content_info = {
-                            'is_playlist': False,
-                            'title': title[:120],
+                            'title': title[:110],
                             'duration': duration,
                             'views': views,
                             'uploader': uploader,
                             'thumbnail': thumbnail,
-                            'resolved_url': resolved_url
+                            'clean_url': clean_url
                         }
-                        status_box.update(label="✅ تم تحليل المحتوى بنجاح! جاهز للتحميل الآن.", state="complete")
-                        st.toast("✅ تم استخراج بيانات الفيديو بنجاح!", icon="🎉")
-                        
+                        st.success("✅ تم فحص المحتوى بنجاح! يمكنك الآن الضغط على زر التحميل أدناه.")
             except Exception as ex:
-                status_box.update(label=f"❌ حدث خطأ أثناء الفحص: {str(ex)[:100]}", state="error")
-                st.error(f"تفاصيل الخطأ: {str(ex)}")
+                err_msg = str(ex)
+                if "Private" in err_msg or "login" in err_msg:
+                    st.error("🔒 هذا الفيديو خاص أو يتطلب تسجيل دخول للوصول إليه.")
+                elif "not found" in err_msg or "404" in err_msg:
+                    st.error("❌ تم حذف هذا الفيديو أو أن الرابط غير صحيح.")
+                else:
+                    st.error(f"❌ حدث خطأ أثناء الفحص: {err_msg[:120]}")
 
 # ---------------------------------------------------------
-# Content Preview Card
+# 8. بطاقة المعاينة المرئية (Preview Card)
 # ---------------------------------------------------------
 if st.session_state.content_info:
     info = st.session_state.content_info
-    
-    if not info.get('is_playlist'):
-        st.html("<div class='glass-card'>")
-        c1, c2 = st.columns([1, 2])
-        with c1:
-            if info.get('thumbnail'):
-                st.image(info['thumbnail'], use_container_width=True)
-            else:
-                st.html("<div style='height:120px; background:#1e293b; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:30px;'>🎬</div>")
-        with c2:
-            st.markdown(f"### {info['title']}")
-            st.markdown(f"**👤 الناشر:** `{info['uploader']}`")
-            st.html(f"""
-                <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-                    <span class="badge-pill">⏱️ المدة: {format_duration(info['duration'])}</span>
-                    <span class="badge-pill">👁️ المشاهدات: {format_number(info['views'])}</span>
-                    <span class="badge-pill">📌 المنصة: {st.session_state.detected_platform}</span>
-                </div>
-            """)
-        st.html("</div>")
-    else:
-        st.info(f"📋 **قائمة تشغيل:** {info['title']} (عدد العناصر: {info['count']})")
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    c1, c2 = st.columns([1, 2])
+    with c1:
+        if info.get('thumbnail'):
+            st.image(info['thumbnail'], use_container_width=True)
+        else:
+            st.markdown("<div style='height:120px; background:#1e293b; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:32px;'>🎬</div>", unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"### {info['title']}")
+        st.markdown(f"**👤 الناشر:** `{info['uploader']}`")
+        st.markdown(f"""
+            <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                <span class="badge-info">⏱️ المدة: {format_duration(info['duration'])}</span>
+                <span class="badge-info">👁️ المشاهدات: {format_views(info['views'])}</span>
+                <span class="badge-info">📌 المنصة: {st.session_state.detected_platform}</span>
+            </div>
+        """, unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Download Execution Logic with Live Progress
+# 9. محرك التحميل المتطور (Download Engine with Live Telemetry)
 # ---------------------------------------------------------
-download_btn_text = "🚀 بدء تحميل الفيديوهات المحددة" if st.session_state.playlist_entries else "🚀 بدء التحميل بأعلى جودة"
-
-if st.button(download_btn_text, type="primary"):
+if st.button("🚀 بدء التحميل بأعلى جودة", type="primary"):
     if not st.session_state.url_input.strip():
         st.warning("⚠️ الرجاء إدخال الرابط أولاً!")
     else:
-        progress_bar = st.progress(0, text="⚡ تحضير بيئة التنزيل المسرّعة...")
-        progress_status = st.empty()
+        p_bar = st.progress(0, text="⚡ جاري الاتصال بالخادم وتحضير التنزيل...")
+        p_label = st.empty()
         
-        def yt_dlp_hook(d):
-            if d['status'] == 'downloading':
+        def progress_callback(d):
+            if d.get('status') == 'downloading':
                 total = d.get('total_bytes') or d.get('total_bytes_estimate') or 0
                 downloaded = d.get('downloaded_bytes', 0)
                 if total > 0:
                     pct = min(downloaded / total, 1.0)
-                    progress_bar.progress(pct, text=f"⏳ جاري التحميل: {int(pct * 100)}%")
+                    p_bar.progress(pct, text=f"⏳ جاري التحميل: {int(pct * 100)}%")
                 speed = d.get('_speed_str', '')
                 eta = d.get('_eta_str', '')
-                progress_status.caption(f"⚡ السرعة الحالية: {speed} | الوقت المتبقي المقدر: {eta}")
-            elif d['status'] == 'finished':
-                progress_bar.progress(1.0, text="✨ تم اكتمال التنزيل! جاري التحويل والمعالجة النهائية...")
-                progress_status.caption("🛠️ جاري إعداد الملف بصيغته النهائية...")
-        
+                p_label.caption(f"⚡ السرعة الحالية: {speed} | الوقت المقدر المتبقي: {eta}")
+            elif d.get('status') == 'finished':
+                p_bar.progress(1.0, text="✨ اكتمل التنزيل! جاري معالجة وتجهيز الملف...")
+                p_label.caption("🛠️ جاري التحويل النهائي...")
+                
         temp_dir = tempfile.mkdtemp()
         try:
             target_url = resolve_url(st.session_state.url_input)
@@ -579,23 +517,22 @@ if st.button(download_btn_text, type="primary"):
                 'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
                 'geo_bypass': True,
                 'windowsfilenames': True,
-                'progress_hooks': [yt_dlp_hook],
-                'writeimages': True, # For TikTok photo slideshows
+                'progress_hooks': [progress_callback],
+                'writeimages': True, # يدعم صور منشورات تيك توك
                 'http_headers': {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
                 },
                 'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
             }
             
-            # Format Selection Mapping
-            is_audio_only = "صوت" in selected_quality or "MP3" in selected_quality
+            is_audio = "صوت" in selected_quality or "MP3" in selected_quality
             
             if "YouTube" in selected_platform:
                 if "1080p" in selected_quality:
                     ydl_opts['format'] = 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best'
                 elif "720p" in selected_quality:
                     ydl_opts['format'] = 'bestvideo[height<=720]+bestaudio/best[height<=720]/best'
-                elif is_audio_only:
+                elif is_audio:
                     ydl_opts['format'] = 'bestaudio/best'
                     ydl_opts['postprocessors'] = [{
                         'key': 'FFmpegExtractAudio',
@@ -605,7 +542,7 @@ if st.button(download_btn_text, type="primary"):
                 else:
                     ydl_opts['format'] = 'bestvideo+bestaudio/best'
             elif "Facebook" in selected_platform:
-                if is_audio_only:
+                if is_audio:
                     ydl_opts['format'] = 'bestaudio/best'
                     ydl_opts['postprocessors'] = [{
                         'key': 'FFmpegExtractAudio',
@@ -618,7 +555,7 @@ if st.button(download_btn_text, type="primary"):
                     ydl_opts['format'] = 'bestvideo+bestaudio/best'
             else:
                 # TikTok & Instagram
-                if is_audio_only:
+                if is_audio:
                     ydl_opts['format'] = 'bestaudio/best'
                     ydl_opts['postprocessors'] = [{
                         'key': 'FFmpegExtractAudio',
@@ -628,129 +565,123 @@ if st.button(download_btn_text, type="primary"):
                 else:
                     ydl_opts['format'] = 'best/bestvideo+bestaudio'
                     
-            ydl_opts['noplaylist'] = not bool(st.session_state.playlist_entries)
+            ydl_opts['noplaylist'] = True
             
             with YoutubeDL(ydl_opts) as ydl:
-                extract_result = ydl.extract_info(target_url, download=True)
-                item_title = extract_result.get('title') if extract_result else "download"
+                res = ydl.extract_info(target_url, download=True)
+                title = res.get('title') if res else "download"
                 
-            # Collect files in temp_dir
-            downloaded_files = [os.path.join(temp_dir, f) for f in os.listdir(temp_dir) if os.path.isfile(os.path.join(temp_dir, f))]
+            files = [os.path.join(temp_dir, f) for f in os.listdir(temp_dir) if os.path.isfile(os.path.join(temp_dir, f))]
             
-            if not downloaded_files:
-                st.error("❌ لم يتم العثور على أي ملفات تم تنزيلها. تأكد من أن الفيديو متاح للعامة.")
+            if not files:
+                st.error("❌ لم يتم العثور على الملف بعد التنزيل. تأكد من أن الرابط متاح للعامة.")
             else:
-                # Single or Multiple Files Handling
-                if len(downloaded_files) == 1:
-                    filepath = downloaded_files[0]
+                if len(files) == 1:
+                    filepath = files[0]
                     file_size_mb = os.path.getsize(filepath) / (1024 * 1024)
-                    with open(filepath, "rb") as fp:
-                        file_data = fp.read()
-                    
-                    filename_download = os.path.basename(filepath)
-                    mime_type = "video/mp4"
-                    if filename_download.endswith(".mp3"):
-                        mime_type = "audio/mpeg"
-                    elif filename_download.endswith((".jpg", ".jpeg", ".png", ".webp")):
-                        mime_type = "image/jpeg"
+                    with open(filepath, "rb") as f:
+                        file_bytes = f.read()
+                        
+                    dl_name = os.path.basename(filepath)
+                    mime = "video/mp4"
+                    if dl_name.endswith(".mp3"):
+                        mime = "audio/mpeg"
+                    elif dl_name.endswith((".jpg", ".jpeg", ".png", ".webp")):
+                        mime = "image/jpeg"
                         
                     st.session_state.download_ready = {
-                        'data': file_data,
-                        'name': filename_download,
-                        'mime': mime_type,
+                        'data': file_bytes,
+                        'name': dl_name,
+                        'mime': mime,
                         'size_mb': file_size_mb,
-                        'title': item_title
+                        'title': title
                     }
                 else:
-                    # Package multiple items into a ZIP archive
-                    zip_buffer = io.BytesIO()
-                    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-                        for f in downloaded_files:
-                            zip_file.write(f, os.path.basename(f))
-                    zip_data = zip_buffer.getvalue()
+                    # تجميع صور الألبوم المتعددة داخل ملف ZIP
+                    buf = io.BytesIO()
+                    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+                        for f in files:
+                            zf.write(f, os.path.basename(f))
+                    zip_data = buf.getvalue()
                     file_size_mb = len(zip_data) / (1024 * 1024)
-                    zip_name = f"{sanitize_filename(item_title)}_album.zip"
+                    dl_name = f"{sanitize_filename(title)}_album.zip"
                     
                     st.session_state.download_ready = {
                         'data': zip_data,
-                        'name': zip_name,
+                        'name': dl_name,
                         'mime': "application/zip",
                         'size_mb': file_size_mb,
-                        'title': f"حزمة من {len(downloaded_files)} ملفات"
+                        'title': title
                     }
-                
-                # Add to History
+                    
                 time_str = datetime.now().strftime("%I:%M %p")
                 st.session_state.download_history.append({
-                    'title': item_title[:50],
+                    'title': title[:50],
                     'platform': selected_platform,
                     'format': selected_quality,
                     'time': time_str,
                     'size': f"{file_size_mb:.1f} MB"
                 })
                 
-                st.toast("🎉 تم تجهيز الملف بنجاح! اضغط على زر التحميل أدناه.", icon="📥")
+                st.success("🎉 تم تجهيز الملف بنجاح! اضغط على زر الحفظ أدناه.")
                 
         except Exception as e:
-            st.error(f"❌ حدث خطأ أثناء التحميل: {str(e)}")
+            err = str(e)
+            if "Sign in" in err or "bot" in err.lower():
+                st.error("⚠️ تطلب المنصة التحقق أو تسجيل الدخول للوصول إلى هذا المحتوى.")
+            else:
+                st.error(f"❌ حدث خطأ أثناء التحميل: {err[:140]}")
         finally:
-            # Clean up temp folder safely
             shutil.rmtree(temp_dir, ignore_errors=True)
 
 # ---------------------------------------------------------
-# Download Ready Trigger Button
+# 10. زر تسليم وحفظ الملف على جهاز المستخدم (Download Ready)
 # ---------------------------------------------------------
 if st.session_state.download_ready:
-    res = st.session_state.download_ready
-    st.html(f"""
-        <div class="glass-card" style="border-color: rgba(0, 230, 118, 0.4); background: rgba(0, 230, 118, 0.05); margin-top: 15px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <div>
-                    <h3 style="margin:0; color:#00E676; font-size:18px;">✅ جاهز للحفظ على جهازك!</h3>
-                    <p style="margin:4px 0 0 0; color:#94A3B8; font-size:13px;"><b>الملف:</b> {res['name']} | <b>الحجم:</b> {res['size_mb']:.1f} MB</p>
-                </div>
-            </div>
+    r = st.session_state.download_ready
+    st.markdown(f"""
+        <div class="glass-card" style="border-color: rgba(0, 230, 118, 0.45); background: rgba(0, 230, 118, 0.06); margin-top: 15px;">
+            <h3 style="margin:0; color:#00E676; font-size:18px;">✅ تم تجهيز الملف بنجاح!</h3>
+            <p style="margin:4px 0 0 0; color:#94A3B8; font-size:13px;"><b>الملف:</b> {r['name']} | <b>الحجم:</b> {r['size_mb']:.1f} MB</p>
         </div>
-    """)
+    """, unsafe_allow_html=True)
     
     st.download_button(
-        label=f"💾 حفظ الملف الآن على هاتفك أو حاسوبك ({res['size_mb']:.1f} MB)",
-        data=res['data'],
-        file_name=res['name'],
-        mime=res['mime'],
+        label=f"💾 حفظ الملف الآن على جهازك ({r['size_mb']:.1f} MB)",
+        data=r['data'],
+        file_name=r['name'],
+        mime=r['mime'],
         use_container_width=True
     )
 
 # ---------------------------------------------------------
-# Download History Section
+# 11. سجل التحميلات السابقة (History Section)
 # ---------------------------------------------------------
 if st.session_state.download_history:
-    with st.expander(f"📜 سجل التحميلات السابقة ({len(st.session_state.download_history)} عمليات)", expanded=False):
+    with st.expander(f"📜 سجل التحميلات السابقة ({len(st.session_state.download_history)} عمليات)"):
         for item in reversed(st.session_state.download_history):
-            st.html(f"""
+            st.markdown(f"""
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:rgba(255,255,255,0.03); border-radius:10px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.06);">
                     <div>
                         <b style="color:#F8FAFC;">{item['title']}</b>
-                        <div style="font-size:12px; color:#94A3B8; margin-top:3px;">
-                            {item['platform']} • {item['format']}
-                        </div>
+                        <div style="font-size:12px; color:#94A3B8; margin-top:3px;">{item['platform']} • {item['format']}</div>
                     </div>
                     <div style="text-align:left;">
-                        <span style="font-size:11px; background:rgba(0,230,118,0.1); color:#00E676; padding:3px 8px; border-radius:5px; font-weight:700;">{item['size']}</span>
+                        <span style="font-size:11px; background:rgba(0,230,118,0.12); color:#00E676; padding:3px 8px; border-radius:5px; font-weight:700;">{item['size']}</span>
                         <div style="font-size:11px; color:#64748B; margin-top:3px;">{item['time']}</div>
                     </div>
                 </div>
-            """)
+            """, unsafe_allow_html=True)
             
-        if st.button("🗑️ مسح السجل", type="secondary"):
+        if st.button("🗑️ مسح السجل"):
             st.session_state.download_history = []
             st.rerun()
 
 # ---------------------------------------------------------
-# Footer
+# 12. تذييل الصفحة (Footer)
 # ---------------------------------------------------------
-st.html("""
+st.markdown("""
     <div style="text-align:center; margin-top:40px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.05); color:#64748B; font-size:12px;">
-        MediaMaster Pro V3.0 • فائق السرعة • يدعم يوتيوب، تيك توك، انستغرام، وفيسبوك ريلز
+        MediaMaster Pro V3.0 • سريع وخفيف • يدعم ريلز فيسبوك، انستغرام، يوتيوب، وتيك توك
     </div>
-""")
+""", unsafe_allow_html=True)
