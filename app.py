@@ -58,8 +58,8 @@ st.markdown("""
     }
     
     .block-container {
-        padding-top: 1.8rem !important;
-        padding-bottom: 3rem !important;
+        padding-top: 5.5rem !important; /* مسافة أمان كافية جداً تمنع قطع الكلام تحت شريط Streamlit */
+        padding-bottom: 4rem !important;
         max-width: 780px !important;
     }
     
@@ -96,15 +96,17 @@ st.markdown("""
         font-size: 14px;
         font-weight: 600;
         margin-top: 6px;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
     
     /* شارات المنصات */
     .platforms-row {
         display: flex;
         flex-wrap: wrap;
+        justify-content: center;
         gap: 8px;
-        margin-bottom: 22px;
+        margin-top: 10px;
+        margin-bottom: 24px;
     }
     .p-tag {
         padding: 5px 12px;
@@ -122,20 +124,17 @@ st.markdown("""
     .p-ig { color: #F472B6; border-color: rgba(244, 114, 182, 0.3); }
     .p-tt { color: #00F2FE; border-color: rgba(0, 242, 254, 0.3); }
     
-    /* بطاقة زجاجية */
-    .glass-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 16px;
-        padding: 20px;
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-        margin-bottom: 20px;
-        transition: border 0.3s ease;
+    /* بطاقة زجاجية لحاويات Streamlit */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background: rgba(17, 24, 39, 0.75) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 16px !important;
+        backdrop-filter: blur(16px) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+        margin-bottom: 22px !important;
     }
-    .glass-card:hover {
-        border-color: rgba(255, 255, 255, 0.16);
+    div[data-testid="stVerticalBlockBorderWrapper"]:hover {
+        border-color: rgba(255, 255, 255, 0.18) !important;
     }
     
     /* حقول الإدخال */
@@ -318,99 +317,95 @@ if 'download_history' not in st.session_state:
     st.session_state.download_history = []
 
 # ---------------------------------------------------------
-# 5. الترويسة الرئيسية (Main Header)
+# 5. الترويسة الرئيسية الموحدة (Unified Centered Header)
 # ---------------------------------------------------------
-col_h1, col_h2 = st.columns([5, 1])
-with col_h1:
-    st.markdown("""
-        <div>
-            <div class="hero-badge">⚡ الجيل الثالث الذكي Pro V3</div>
-            <h1 class="hero-title">أداة التحميل الشاملة للوسائط</h1>
-            <p class="hero-desc">تحميل ريلز فيسبوك، انستغرام، يوتيوب، وتيك توك بأعلى جودة أصلية وبدون قيود</p>
-        </div>
-    """, unsafe_allow_html=True)
-with col_h2:
-    if st.button("🔄 تصفير", help="إعادة تعيين ومسح البيانات"):
-        st.session_state.url_input = ""
-        st.session_state.content_info = None
-        st.session_state.download_ready = None
-        st.rerun()
-
 st.markdown("""
-    <div class="platforms-row">
-        <span class="p-tag p-yt">🔴 يوتيوب (4K / 60FPS)</span>
-        <span class="p-tag p-fb">🔵 ريلز فيسبوك (HD)</span>
-        <span class="p-tag p-ig">🟣 ريلز انستغرام (أصلي)</span>
-        <span class="p-tag p-tt">⚫ تيك توك (بدون علامة مائية)</span>
+    <div style="text-align: center; margin-bottom: 25px;">
+        <div class="hero-badge">⚡ الجيل الثالث الذكي Pro V3</div>
+        <h1 class="hero-title">أداة التحميل الشاملة للوسائط</h1>
+        <p class="hero-desc">تحميل ريلز فيسبوك، انستغرام، يوتيوب، وتيك توك بأعلى جودة أصلية وبدون قيود</p>
+        <div class="platforms-row">
+            <span class="p-tag p-yt">🔴 يوتيوب (4K / 60FPS)</span>
+            <span class="p-tag p-fb">🔵 ريلز فيسبوك (HD)</span>
+            <span class="p-tag p-ig">🟣 ريلز انستغرام (أصلي)</span>
+            <span class="p-tag p-tt">⚫ تيك توك (بدون علامة مائية)</span>
+        </div>
     </div>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # 6. بطاقة إدخال الرابط وتحديد الجودة (Input Card)
 # ---------------------------------------------------------
-st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+with st.container(border=True):
+    current_url = st.text_input(
+        "رابط الفيديو أو الريلز:",
+        value=st.session_state.url_input,
+        placeholder="ألصق الرابط هنا (https://www.facebook.com/reel/... أو يوتيوب / تيك توك)"
+    )
 
-current_url = st.text_input(
-    "رابط الفيديو أو الريلز:",
-    value=st.session_state.url_input,
-    placeholder="ألصق الرابط هنا (https://www.facebook.com/reel/... أو يوتيوب / تيك توك)"
-)
+    # التعرف التلقائي عند تغيير الرابط
+    if current_url != st.session_state.url_input:
+        st.session_state.url_input = current_url
+        if current_url.strip():
+            st.session_state.detected_platform = detect_platform(current_url)
 
-# التعرف التلقائي عند تغيير الرابط
-if current_url != st.session_state.url_input:
-    st.session_state.url_input = current_url
-    if current_url.strip():
-        st.session_state.detected_platform = detect_platform(current_url)
+    col_p, col_q = st.columns([1, 1])
 
-col_p, col_q = st.columns([1, 1])
+    platform_options = ["YouTube", "Facebook Reels", "Instagram Reels", "TikTok Reels"]
+    p_idx = platform_options.index(st.session_state.detected_platform) if st.session_state.detected_platform in platform_options else 0
 
-platform_options = ["YouTube", "Facebook Reels", "Instagram Reels", "TikTok Reels"]
-p_idx = platform_options.index(st.session_state.detected_platform) if st.session_state.detected_platform in platform_options else 0
+    with col_p:
+        selected_platform = st.selectbox("المنصة المكتشفة:", platform_options, index=p_idx)
+        if selected_platform != st.session_state.detected_platform:
+            st.session_state.detected_platform = selected_platform
 
-with col_p:
-    selected_platform = st.selectbox("المنصة المكتشفة:", platform_options, index=p_idx)
-    if selected_platform != st.session_state.detected_platform:
-        st.session_state.detected_platform = selected_platform
+    with col_q:
+        if "YouTube" in selected_platform:
+            quality_options = [
+                "🎬 أفضل جودة فائقة (Best / 4K / 60fps)",
+                "💎 دقة 1080p Full HD (MP4)",
+                "⚡ دقة 720p HD (MP4)",
+                "🎵 صوت فقط عالي النقاء (MP3 - 320kbps)"
+            ]
+        elif "Facebook" in selected_platform:
+            quality_options = [
+                "🎬 أفضل جودة أصلية للريلز (HD)",
+                "⚡ جودة قياسية سريعة (SD)",
+                "🎵 صوت الريلز فقط (MP3)"
+            ]
+        elif "TikTok" in selected_platform:
+            quality_options = [
+                "🎬 أفضل جودة أصلية (بدون علامة مائية)",
+                "📸 صور المنشور كاملة (Slideshow Photos)",
+                "🎵 صوت التيك توك فقط (MP3)"
+            ]
+        else:  # Instagram
+            quality_options = [
+                "🎬 أفضل جودة أصلية للريلز (Original HD)",
+                "🎵 صوت الريلز فقط (MP3)"
+            ]
+            
+        selected_quality = st.selectbox("الجودة / الصيغة المطلوبة:", quality_options)
 
-with col_q:
-    if "YouTube" in selected_platform:
-        quality_options = [
-            "🎬 أفضل جودة فائقة (Best / 4K / 60fps)",
-            "💎 دقة 1080p Full HD (MP4)",
-            "⚡ دقة 720p HD (MP4)",
-            "🎵 صوت فقط عالي النقاء (MP3 - 320kbps)"
-        ]
-    elif "Facebook" in selected_platform:
-        quality_options = [
-            "🎬 أفضل جودة أصلية للريلز (HD)",
-            "⚡ جودة قياسية سريعة (SD)",
-            "🎵 صوت الريلز فقط (MP3)"
-        ]
-    elif "TikTok" in selected_platform:
-        quality_options = [
-            "🎬 أفضل جودة أصلية (بدون علامة مائية)",
-            "📸 صور المنشور كاملة (Slideshow Photos)",
-            "🎵 صوت التيك توك فقط (MP3)"
-        ]
-    else:  # Instagram
-        quality_options = [
-            "🎬 أفضل جودة أصلية للريلز (Original HD)",
-            "🎵 صوت الريلز فقط (MP3)"
-        ]
-        
-    selected_quality = st.selectbox("الجودة / الصيغة المطلوبة:", quality_options)
+    # صف الأزرار التفاعلية
+    col_b1, col_b2, col_b3 = st.columns([2, 1, 1])
+    with col_b1:
+        analyze_btn = st.button("🔍 فحص وتحليل الرابط", use_container_width=True)
+    with col_b2:
+        if st.button("🗑️ مسح الرابط", use_container_width=True):
+            st.session_state.url_input = ""
+            st.session_state.content_info = None
+            st.session_state.download_ready = None
+            st.rerun()
+    with col_b3:
+        if st.button("🔄 تصفير", help="إعادة تعيين ومسح البيانات", use_container_width=True):
+            st.session_state.url_input = ""
+            st.session_state.content_info = None
+            st.session_state.download_ready = None
+            st.rerun()
 
-col_b1, col_b2 = st.columns([3, 1])
-with col_b1:
-    analyze_btn = st.button("🔍 فحص وتحليل الرابط")
-with col_b2:
-    if st.button("🗑️ مسح الرابط"):
-        st.session_state.url_input = ""
-        st.session_state.content_info = None
-        st.session_state.download_ready = None
-        st.rerun()
-
-st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 14px;'></div>", unsafe_allow_html=True)
+    start_download = st.button("🚀 بدء التحميل بأعلى جودة", type="primary", use_container_width=True)
 
 # ---------------------------------------------------------
 # 7. فحص الرابط واستخراج المعلومات (Inspect URL)
@@ -451,7 +446,7 @@ if analyze_btn:
                             'thumbnail': thumbnail,
                             'clean_url': clean_url
                         }
-                        st.success("✅ تم فحص المحتوى بنجاح! يمكنك الآن الضغط على زر التحميل أدناه.")
+                        st.success("✅ تم فحص المحتوى بنجاح! يمكنك الآن الضغط على زر التحميل.")
             except Exception as ex:
                 err_msg = str(ex)
                 if "Private" in err_msg or "login" in err_msg:
@@ -466,29 +461,28 @@ if analyze_btn:
 # ---------------------------------------------------------
 if st.session_state.content_info:
     info = st.session_state.content_info
-    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-    c1, c2 = st.columns([1, 2])
-    with c1:
-        if info.get('thumbnail'):
-            st.image(info['thumbnail'], use_container_width=True)
-        else:
-            st.markdown("<div style='height:120px; background:#1e293b; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:32px;'>🎬</div>", unsafe_allow_html=True)
-    with c2:
-        st.markdown(f"### {info['title']}")
-        st.markdown(f"**👤 الناشر:** `{info['uploader']}`")
-        st.markdown(f"""
-            <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-                <span class="badge-info">⏱️ المدة: {format_duration(info['duration'])}</span>
-                <span class="badge-info">👁️ المشاهدات: {format_views(info['views'])}</span>
-                <span class="badge-info">📌 المنصة: {st.session_state.detected_platform}</span>
-            </div>
-        """, unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    with st.container(border=True):
+        c1, c2 = st.columns([1, 2])
+        with c1:
+            if info.get('thumbnail'):
+                st.image(info['thumbnail'], use_container_width=True)
+            else:
+                st.markdown("<div style='height:120px; background:#1e293b; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:32px;'>🎬</div>", unsafe_allow_html=True)
+        with c2:
+            st.markdown(f"### {info['title']}")
+            st.markdown(f"**👤 الناشر:** `{info['uploader']}`")
+            st.markdown(f"""
+                <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                    <span class="badge-info">⏱️ المدة: {format_duration(info['duration'])}</span>
+                    <span class="badge-info">👁️ المشاهدات: {format_views(info['views'])}</span>
+                    <span class="badge-info">📌 المنصة: {st.session_state.detected_platform}</span>
+                </div>
+            """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # 9. محرك التحميل المتطور (Download Engine with Live Telemetry)
 # ---------------------------------------------------------
-if st.button("🚀 بدء التحميل بأعلى جودة", type="primary"):
+if start_download:
     if not st.session_state.url_input.strip():
         st.warning("⚠️ الرجاء إدخال الرابط أولاً!")
     else:
