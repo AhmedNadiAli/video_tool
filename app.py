@@ -185,24 +185,24 @@ st.html("""
     }
     
     /* Primary Download Button */
-    .stButton>button[kind="primary"] {
+    .stButton>button[kind="primary"], .stButton>button[data-testid="stBaseButton-primary"] {
         background: linear-gradient(135deg, #00E676 0%, #00B0FF 100%) !important;
         color: #050B14 !important;
         box-shadow: 0 4px 20px rgba(0, 230, 118, 0.35) !important;
     }
-    .stButton>button[kind="primary"]:hover {
+    .stButton>button[kind="primary"]:hover, .stButton>button[data-testid="stBaseButton-primary"]:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 8px 30px rgba(0, 230, 118, 0.55) !important;
         filter: brightness(1.08) !important;
     }
     
     /* Secondary Action Button */
-    .stButton>button[kind="secondary"] {
+    .stButton>button[kind="secondary"], .stButton>button[data-testid="stBaseButton-secondary"] {
         background: rgba(255, 255, 255, 0.06) !important;
         color: #E2E8F0 !important;
         border: 1px solid rgba(255, 255, 255, 0.12) !important;
     }
-    .stButton>button[kind="secondary"]:hover {
+    .stButton>button[kind="secondary"]:hover, .stButton>button[data-testid="stBaseButton-secondary"]:hover {
         background: rgba(255, 255, 255, 0.12) !important;
         border-color: rgba(255, 255, 255, 0.25) !important;
         transform: translateY(-1px) !important;
@@ -359,7 +359,7 @@ with col_h1:
         </div>
     """)
 with col_h2:
-    if st.button("🔄 تصفير", help="إعادة تعيين التطبيق ومسح البيانات المؤقتة", kind="secondary"):
+    if st.button("🔄 تصفير", help="إعادة تعيين التطبيق ومسح البيانات المؤقتة", type="secondary"):
         st.session_state.url_input = ""
         st.session_state.last_analyzed_url = ""
         st.session_state.content_info = None
@@ -445,9 +445,9 @@ with st.container():
     # Action Buttons Row (Analyze & Quick Actions)
     btn_col1, btn_col2 = st.columns([3, 1])
     with btn_col1:
-        analyze_clicked = st.button("🔍 فحص وتحليل الرابط", kind="secondary")
+        analyze_clicked = st.button("🔍 فحص وتحليل الرابط", type="secondary")
     with btn_col2:
-        clear_clicked = st.button("🗑️ مسح الرابط", kind="secondary")
+        clear_clicked = st.button("🗑️ مسح الرابط", type="secondary")
         if clear_clicked:
             st.session_state.url_input = ""
             st.session_state.content_info = None
@@ -550,7 +550,7 @@ if st.session_state.content_info:
 # ---------------------------------------------------------
 download_btn_text = "🚀 بدء تحميل الفيديوهات المحددة" if st.session_state.playlist_entries else "🚀 بدء التحميل بأعلى جودة"
 
-if st.button(download_btn_text, kind="primary"):
+if st.button(download_btn_text, type="primary"):
     if not st.session_state.url_input.strip():
         st.warning("⚠️ الرجاء إدخال الرابط أولاً!")
     else:
@@ -742,7 +742,7 @@ if st.session_state.download_history:
                 </div>
             """)
             
-        if st.button("🗑️ مسح السجل", kind="secondary"):
+        if st.button("🗑️ مسح السجل", type="secondary"):
             st.session_state.download_history = []
             st.rerun()
 
